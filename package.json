@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prettier": "prettier --check './src/**/*'",
+    "prettier": "prettier --write './src/**/*'",
     "postinstall": "husky"
   },
   "dependencies": {
