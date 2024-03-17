@@ -1,0 +1,28 @@
+import React from 'react';
+import styled from 'styled-components';
+
+export const Layout = ({ children }: React.PropsWithChildren) => {
+  return (
+    <Container>
+      <Wrapper>{children}</Wrapper>
+    </Container>
+  );
+};
+
+const Container = styled.div`
+  width: 100vw;
+  height: 100vh;
+`;
+
+const Wrapper = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  width: 390px;
+
+  @media (min-width: 760px) {
+    width: 760px;
+  }
+`;
