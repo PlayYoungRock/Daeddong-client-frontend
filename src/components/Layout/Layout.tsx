@@ -1,13 +1,16 @@
+import dynamic from 'next/dynamic';
 import React from 'react';
 import styled from 'styled-components';
 
-export const Layout = ({ children }: React.PropsWithChildren) => {
+const Layouts = ({ children }: React.PropsWithChildren) => {
   return (
     <Container>
       <Wrapper>{children}</Wrapper>
     </Container>
   );
 };
+
+export const Layout = dynamic(() => Promise.resolve(Layouts), { ssr: false });
 
 const Container = styled.div`
   width: 100vw;
