@@ -1,3 +1,4 @@
+import { layoutId } from '@/constants';
 import dynamic from 'next/dynamic';
 import React from 'react';
 import styled from 'styled-components';
@@ -5,7 +6,7 @@ import styled from 'styled-components';
 const Layouts = ({ children }: React.PropsWithChildren) => {
   return (
     <Container>
-      <Wrapper>{children}</Wrapper>
+      <Wrapper id={layoutId}>{children}</Wrapper>
     </Container>
   );
 };
