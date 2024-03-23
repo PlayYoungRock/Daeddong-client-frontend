@@ -1,3 +1,10 @@
+import { Map } from '@/components';
+import { MapProvider } from '@/components/Map/MapProvider';
+
 export default function Home() {
-  return <>Home</>;
+  return (
+    <MapProvider>
+      <Map />
+    </MapProvider>
+  );
 }
