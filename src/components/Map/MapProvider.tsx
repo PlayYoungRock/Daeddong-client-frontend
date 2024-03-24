@@ -1,19 +1,51 @@
 import Script from 'next/script';
-import React, { createContext, memo, useState } from 'react';
+import React, { createContext, memo, useCallback, useMemo, useRef, useState } from 'react';
+import { defaultPosition, usePosition } from './usePosition';
 
-export const MapContext = createContext<{ status: StatusType }>({ status: null });
+export const MapContext = createContext<MapContextType>({
+  status: null,
+  createMap: () => {},
+});
 
 type StatusType = boolean | null;
+
+interface MapContextType {
+  status: StatusType;
+  createMap: (dom: HTMLElement) => void;
+}
 
 interface MapProviderProps {
   children: React.ReactNode;
 }
 
 export const MapProvider = memo<MapProviderProps>(({ children }) => {
+  const map = useRef<naver.maps.Map | null>(null);
+
   const [status, setStatus] = useState<StatusType>(null);
+  const { position } = usePosition(map.current);
+
+  const createMap = useCallback(
+    (dom: HTMLElement) => {
+      if (!status) return;
+
+      map.current = new naver.maps.Map(dom, {
+        center: new naver.maps.LatLng(defaultPosition),
+        zoom: 17,
+      });
+    },
+    [status],
+  );
+
+  const value = useMemo(
+    () => ({
+      status,
+      createMap,
+    }),
+    [status, createMap],
+  );
 
   return (
-    <MapContext.Provider value={{ status: status }}>
+    <MapContext.Provider value={value}>
       {children}
       <Script
         type="text/javascript"

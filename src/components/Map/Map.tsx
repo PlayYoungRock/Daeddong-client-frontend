@@ -4,17 +4,14 @@ import styled, { keyframes } from 'styled-components';
 import { MapContext } from './MapProvider';
 
 export const Map = memo(() => {
-  const { status } = useContext(MapContext);
+  const { status, createMap } = useContext(MapContext);
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!status || !ref.current) return;
-
-    new naver.maps.Map(ref.current, {
-      center: new naver.maps.LatLng(37.3595704, 127.105399),
-      zoom: 10,
-    });
-  }, [status]);
+    if (ref.current) {
+      createMap(ref.current);
+    }
+  }, [createMap]);
 
   if (status === null) {
     return (
