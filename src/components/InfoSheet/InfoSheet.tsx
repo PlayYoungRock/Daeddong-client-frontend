@@ -1,12 +1,84 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 
 interface InfoSheetProps extends React.PropsWithChildren {}
 
 export const InfoSheet = memo<InfoSheetProps>(({ children }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const toggleRef = useRef<HTMLDivElement | null>(null);
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [startY, setStartY] = useState(0);
+  const [currentY, setCurrentY] = useState(0);
+
+  useEffect(() => {
+    if (!containerRef.current || !toggleRef.current) return;
+    const container = containerRef.current;
+    const toggle = toggleRef.current;
+
+    const handleTouchStart = (event: TouchEvent) => {
+      const touch = event.touches[0];
+      setIsDragging(true);
+      setStartY(touch.clientY);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (isDragging) {
+        const touch = event.touches[0];
+        const offsetY = startY - touch.clientY;
+        const newBottom = Math.min(Math.max(-450, offsetY + currentY), 0);
+        container.style.bottom = `${newBottom}px`;
+      }
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (isDragging) {
+        setCurrentY(parseFloat(container.style.bottom) || 0);
+        setIsDragging(false);
+      }
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      setIsDragging(true);
+      setStartY(event.clientY);
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (isDragging) {
+        const offsetY = startY - event.clientY;
+        const newBottom = Math.min(Math.max(-450, offsetY + currentY), 0);
+        container.style.bottom = `${newBottom}px`;
+      }
+    };
+    const handleMouseUp = (event: MouseEvent) => {
+      if (isDragging) {
+        setCurrentY(parseFloat(container.style.bottom) || 0);
+        setIsDragging(false);
+      }
+    };
+
+    toggle.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    toggle.addEventListener('touchstart', handleTouchStart);
+    document.addEventListener('touchmove', handleTouchMove);
+    document.addEventListener('touchend', handleTouchEnd);
+
+    return () => {
+      toggle.removeEventListener('mousedown', handleMouseDown);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+
+      toggle.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [currentY, isDragging, startY]);
+
   return (
-    <Container>
-      <Toggle />
+    <Container ref={containerRef}>
+      <Toggle ref={toggleRef} />
       {children}
     </Container>
   );
@@ -21,10 +93,11 @@ const Container = styled.div`
   padding: 16px 16px 0px 16px;
 
   @media (max-width: 760px) {
-    position: fixed;
+    position: absolute;
     height: 80%;
     bottom: 0;
     left: 0;
+    padding-top: 32px;
     z-index: 1000;
     border-top-right-radius: 10px;
     border-top-left-radius: 10px;
@@ -42,7 +115,7 @@ const Toggle = styled.div`
   justify-content: center;
   align-items: center;
   width: 80%;
-  height: 16px;
+  height: 32px;
 
   cursor: grab;
 
