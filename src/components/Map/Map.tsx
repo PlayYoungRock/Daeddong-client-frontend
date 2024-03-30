@@ -44,7 +44,7 @@ export const Map = memo(() => {
     );
   }
 
-  return <Container ref={ref}></Container>;
+  return <Container ref={ref} />;
 });
 
 Map.displayName = 'Map';
