@@ -23,7 +23,8 @@ const Wrapper = styled.div`
   left: 50%;
   transform: translate(-50%, -50%);
   height: 100%;
-  width: 390px;
+  width: 100%;
+  max-width: 410px;
 
   @media (min-width: 760px) {
     width: 760px;
