@@ -12,7 +12,11 @@ export const InfoSheet = memo<InfoSheetProps>(({ children }) => {
   const [currentY, setCurrentY] = useState(0);
 
   useEffect(() => {
-    if (!containerRef.current || !toggleRef.current) return;
+    if (!containerRef.current || !toggleRef.current || !window) return;
+
+    const maxHeight = window.innerHeight * 0.9;
+    const minBottomY = maxHeight * -1 + 64;
+
     const container = containerRef.current;
     const toggle = toggleRef.current;
 
@@ -26,7 +30,7 @@ export const InfoSheet = memo<InfoSheetProps>(({ children }) => {
       if (isDragging) {
         const touch = event.touches[0];
         const offsetY = startY - touch.clientY;
-        const newBottom = Math.min(Math.max(-450, offsetY + currentY), 0);
+        const newBottom = Math.min(Math.max(minBottomY, offsetY + currentY), 0);
         container.style.bottom = `${newBottom}px`;
       }
     };
@@ -46,7 +50,8 @@ export const InfoSheet = memo<InfoSheetProps>(({ children }) => {
     const handleMouseMove = (event: MouseEvent) => {
       if (isDragging) {
         const offsetY = startY - event.clientY;
-        const newBottom = Math.min(Math.max(-450, offsetY + currentY), 0);
+
+        const newBottom = Math.min(Math.max(minBottomY, offsetY + currentY), 0);
         container.style.bottom = `${newBottom}px`;
       }
     };
@@ -94,7 +99,7 @@ const Container = styled.div`
 
   @media (max-width: 760px) {
     position: absolute;
-    height: 80%;
+    height: 90%;
     bottom: 0;
     left: 0;
     padding-top: 32px;
