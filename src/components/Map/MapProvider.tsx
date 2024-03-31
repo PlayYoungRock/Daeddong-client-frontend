@@ -22,6 +22,7 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
   const map = useRef<naver.maps.Map | null>(null);
 
   const [status, setStatus] = useState<StatusType>(null);
+  // todo naver.maps을 활용할 것
   const { position } = usePosition(map.current);
 
   const createMap = useCallback(
