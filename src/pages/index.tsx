@@ -1,11 +1,21 @@
 import styled from 'styled-components';
-import { Map, InfoSheet, MapProvider } from '@/components';
+import { Map, InfoSheet, MapProvider, Button, ContextPopup } from '@/components';
 
 export default function Home() {
   return (
     <MapProvider>
       <Container>
-        <Map />
+        <ContextPopup
+          $contents={
+            <>
+              <Button>Hello</Button>
+              <Button>Bye</Button>
+              <Button>Hi</Button>
+            </>
+          }
+        >
+          <Map />
+        </ContextPopup>
         <InfoSheet>{/* TODO inner 추가할것  */}</InfoSheet>
       </Container>
     </MapProvider>
