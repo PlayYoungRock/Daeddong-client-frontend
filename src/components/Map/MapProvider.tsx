@@ -11,6 +11,7 @@ import React, {
 import { defaultPosition, usePosition } from './usePosition';
 
 export const MapContext = createContext<MapContextType>({
+  map: { current: null },
   status: null,
   createMap: () => {},
   pointer: null,
@@ -19,6 +20,7 @@ export const MapContext = createContext<MapContextType>({
 type StatusType = boolean | null;
 
 interface MapContextType {
+  map: React.MutableRefObject<naver.maps.Map | null>;
   status: StatusType;
   createMap: (dom: HTMLElement) => void;
   pointer: naver.maps.PointerEvent | null;
@@ -27,6 +29,12 @@ interface MapContextType {
 interface MapProviderProps {
   children: React.ReactNode;
 }
+
+const isLatLngBounds = (
+  bounds: naver.maps.PointBounds | naver.maps.LatLngBounds,
+): bounds is naver.maps.LatLngBounds => {
+  return bounds instanceof naver.maps.LatLngBounds;
+};
 
 export const MapProvider = memo<MapProviderProps>(({ children }) => {
   const map = useRef<naver.maps.Map | null>(null);
@@ -73,6 +81,7 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
     }
   }, []);
 
+  // marker 클릭
   useEffect(() => {
     if (!isCreatedMap) return;
 
@@ -94,10 +103,11 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
   const value = useMemo(
     () => ({
       status,
+      map,
       createMap,
       pointer,
     }),
-    [status, pointer, createMap],
+    [status, createMap, pointer],
   );
   return (
     <MapContext.Provider value={value}>
