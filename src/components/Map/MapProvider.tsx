@@ -14,6 +14,7 @@ export const MapContext = createContext<MapContextType>({
   status: null,
   createMap: () => {},
   pointer: null,
+  distance: 0,
 });
 
 type StatusType = boolean | null;
@@ -22,11 +23,18 @@ interface MapContextType {
   status: StatusType;
   createMap: (dom: HTMLElement) => void;
   pointer: naver.maps.PointerEvent | null;
+  distance: number;
 }
 
 interface MapProviderProps {
   children: React.ReactNode;
 }
+
+const isLatLngBounds = (
+  bounds: naver.maps.PointBounds | naver.maps.LatLngBounds,
+): bounds is naver.maps.LatLngBounds => {
+  return bounds instanceof naver.maps.LatLngBounds;
+};
 
 export const MapProvider = memo<MapProviderProps>(({ children }) => {
   const map = useRef<naver.maps.Map | null>(null);
@@ -35,6 +43,7 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
   const [status, setStatus] = useState<StatusType>(null);
   const [isCreatedMap, setIsCreatedMap] = useState(false);
   const [pointer, setPointer] = useState<naver.maps.PointerEvent | null>(null);
+  const [distance, setDistance] = useState(0);
 
   // todo naver.maps을 활용할 것
   usePosition(map.current);
@@ -73,6 +82,7 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
     }
   }, []);
 
+  // marker 클릭
   useEffect(() => {
     if (!isCreatedMap) return;
 
@@ -91,13 +101,49 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
     };
   }, [handleCreateMark, handleRemoveMark, isCreatedMap]);
 
+  // 거리계산
+  useEffect(() => {
+    if (!isCreatedMap) return;
+    if (!map.current) return;
+
+    const current = map.current;
+    // 지도의 bounds와 동일한 크기의 사각형을 그립니다.
+    const rect = new naver.maps.Rectangle({
+      bounds: current.getBounds(),
+      map: current,
+      visible: false,
+    });
+    const bound = rect.getBounds();
+
+    if (!isLatLngBounds(bound)) return;
+
+    const line = new naver.maps.Polyline({
+      path: [bound.getNE(), current.getCenter()],
+      map: current,
+      visible: false,
+    });
+    setDistance(line.getDistance());
+
+    const getDistance = naver.maps.Event.addListener(current, 'bounds_changed', (bounds) => {
+      window.setTimeout(() => {
+        rect.setBounds(bounds);
+        line.setPath([bounds.getNE(), current.getCenter()]);
+
+        setDistance(line.getDistance());
+      }, 500);
+    });
+
+    return () => naver.maps.Event.removeListener(getDistance);
+  }, [isCreatedMap]);
+
   const value = useMemo(
     () => ({
       status,
       createMap,
       pointer,
+      distance,
     }),
-    [status, pointer, createMap],
+    [status, createMap, pointer, distance],
   );
   return (
     <MapContext.Provider value={value}>
