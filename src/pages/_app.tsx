@@ -3,7 +3,7 @@ import createLocalFont from 'next/font/local';
 import Head from 'next/head';
 
 import { GlobalStyle } from '@/styles';
-import { Layout } from '@/components';
+import { Layout, MapProvider } from '@/components';
 
 const localFont = createLocalFont({ src: '../styles/omyu pretty.ttf' });
 
@@ -19,7 +19,9 @@ export default function App({ Component, pageProps }: AppProps) {
       <GlobalStyle />
       <main className={localFont.className}>
         <Layout>
-          <Component {...pageProps} />
+          <MapProvider>
+            <Component {...pageProps} />
+          </MapProvider>
         </Layout>
       </main>
     </>
