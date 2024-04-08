@@ -1,11 +1,12 @@
 import styled from 'styled-components';
 import { Map, InfoSheet, MapContext, Text } from '@/components';
 import { useContext } from 'react';
-import { useDistance } from '@/hooks';
+import { useCenter, useDistance } from '@/hooks';
 
 export default function Home() {
   const { pointer } = useContext(MapContext);
   const { distance } = useDistance();
+  useCenter();
 
   return (
     <Container>

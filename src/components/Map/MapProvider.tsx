@@ -8,7 +8,6 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { defaultPosition, usePosition } from './usePosition';
 
 export const MapContext = createContext<MapContextType>({
   map: { current: null },
@@ -44,15 +43,11 @@ export const MapProvider = memo<MapProviderProps>(({ children }) => {
   const [isCreatedMap, setIsCreatedMap] = useState(false);
   const [pointer, setPointer] = useState<naver.maps.PointerEvent | null>(null);
 
-  // todo naver.maps을 활용할 것
-  usePosition(map.current);
-
   const createMap = useCallback(
     (dom: HTMLElement) => {
       if (!status) return;
 
       map.current = new naver.maps.Map(dom, {
-        center: new naver.maps.LatLng(defaultPosition),
         zoom: 17,
       });
       marker.current = new naver.maps.Marker({
