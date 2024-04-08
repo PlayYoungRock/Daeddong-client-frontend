@@ -1,29 +1,19 @@
 import styled from 'styled-components';
 import { Map, InfoSheet, MapContext, Text } from '@/components';
 import { useContext } from 'react';
-import { useCenter, useDistance } from '@/hooks';
+import { useCenter, useCurrentMarker, useDistance } from '@/hooks';
 
 export default function Home() {
-  const { pointer } = useContext(MapContext);
+  useContext(MapContext);
   const { distance } = useDistance();
+  useCurrentMarker();
   useCenter();
 
   return (
     <Container>
       <Map />
       <InfoSheet>
-        {pointer ? (
-          <>
-            <Text>{pointer && pointer.coord.x}</Text>
-            <Text>{pointer && pointer.coord.y}</Text>
-            <Text>{distance.toFixed(2)}m</Text>
-          </>
-        ) : (
-          <>
-            <Text>선택되지않음</Text>
-            <Text>{distance.toFixed(2)}m</Text>
-          </>
-        )}
+        <Text>{distance.toFixed(2)}m</Text>
       </InfoSheet>
     </Container>
   );
