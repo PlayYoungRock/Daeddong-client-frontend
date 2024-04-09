@@ -33,7 +33,7 @@ interface ToiletType {
 
 interface OptionsType {
   list: ToiletType[];
-  onClick: (e: ToiletType | naver.maps.PointerEvent) => void;
+  onClick: (e: ToiletType & naver.maps.PointerEvent) => void;
 }
 
 export const useToiletMarkerList = (options?: OptionsType) => {
