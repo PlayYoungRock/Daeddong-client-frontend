@@ -5,9 +5,9 @@ import { useCenter, useCurrentMarker, useDistance, useToiletMarkerList } from '@
 
 export default function Home() {
   useContext(MapContext);
+  const { center } = useCenter();
   const { distance } = useDistance();
   useCurrentMarker();
-  useCenter();
   useToiletMarkerList({
     list: [
       {
