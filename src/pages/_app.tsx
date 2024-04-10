@@ -4,8 +4,14 @@ import Head from 'next/head';
 
 import { GlobalStyle } from '@/styles';
 import { Layout, MapProvider } from '@/components';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 
 const localFont = createLocalFont({ src: '../styles/omyu pretty.ttf' });
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -16,14 +22,17 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <GlobalStyle />
-      <main className={localFont.className}>
-        <Layout>
-          <MapProvider>
-            <Component {...pageProps} />
-          </MapProvider>
-        </Layout>
-      </main>
+      <QueryClientProvider client={queryClient}>
+        <GlobalStyle />
+        <main className={localFont.className}>
+          <Layout>
+            <MapProvider>
+              <Component {...pageProps} />
+            </MapProvider>
+          </Layout>
+        </main>
+        <ReactQueryDevtools />
+      </QueryClientProvider>
     </>
   );
 }
