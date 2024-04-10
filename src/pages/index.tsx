@@ -1,13 +1,49 @@
 import styled from 'styled-components';
 import { Map, InfoSheet, MapContext, Text } from '@/components';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { useCenter, useCurrentMarker, useDistance, useToiletMarkerList } from '@/hooks';
 
+interface FormType {
+  seq: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  name: string;
+  address: string;
+  etc: string;
+}
+
 export default function Home() {
-  useContext(MapContext);
+  const { isCreatedMap } = useContext(MapContext);
+  const [form, setForm] = useState<FormType | null>(null);
   const { center } = useCenter();
   const { distance } = useDistance();
-  useCurrentMarker();
+
+  useCurrentMarker({
+    onVisible: (e) => {
+      if (!isCreatedMap) return;
+      const { coord } = e;
+
+      naver.maps.Service.reverseGeocode(
+        {
+          coords: coord,
+          orders: naver.maps.Service.OrderType.ROAD_ADDR,
+        },
+        (status, response) => {
+          if (status === naver.maps.Service.Status.ERROR) return;
+
+          setForm({
+            seq: null,
+            name: '',
+            latitude: coord.x,
+            longitude: coord.y,
+            address: response.v2.address.roadAddress.replaceAll('  ', ' '),
+            etc: '',
+          });
+        },
+      );
+    },
+    onInVisible: () => setForm(null),
+  });
   useToiletMarkerList({
     list: [
       {
@@ -70,7 +106,16 @@ export default function Home() {
       },
     ],
     onClick: (e) => {
-      console.log(e);
+      const { seq, name, latitude, longitude, address, etc } = e;
+
+      setForm({
+        seq,
+        name,
+        latitude,
+        longitude,
+        address,
+        etc,
+      });
     },
   });
 
@@ -78,7 +123,19 @@ export default function Home() {
     <Container>
       <Map />
       <InfoSheet>
-        <Text>{distance.toFixed(2)}m</Text>
+        {form ? (
+          <SheetWrapper>
+            <FormWrapper>
+              <Text $fontSize={20} $bold>
+                {form.name}
+              </Text>
+              <Text $size="large">{form.address}</Text>
+              <Text $size="large">{form.etc}</Text>
+            </FormWrapper>
+          </SheetWrapper>
+        ) : (
+          <Text $size="large">현재 위치를 지도에서 선택해주세요.</Text>
+        )}
       </InfoSheet>
     </Container>
   );
@@ -92,4 +149,17 @@ const Container = styled.div`
     display: flex;
     gap: 20px;
   }
+`;
+
+const SheetWrapper = styled.div`
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+`;
+
+const FormWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `;

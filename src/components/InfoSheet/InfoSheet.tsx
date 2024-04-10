@@ -12,6 +12,15 @@ export const InfoSheet = memo<InfoSheetProps>(({ children }) => {
   const [currentY, setCurrentY] = useState(0);
 
   useEffect(() => {
+    if (!containerRef.current) return;
+    const maxHeight = window.innerHeight * 0.9;
+    const minBottomY = maxHeight * -1 + 64;
+
+    setCurrentY(minBottomY);
+    containerRef.current.style.bottom = `${minBottomY}px`;
+  }, []);
+
+  useEffect(() => {
     if (!containerRef.current || !toggleRef.current || !window) return;
 
     const maxHeight = window.innerHeight * 0.9;
@@ -95,7 +104,7 @@ const Container = styled.div`
   width: 100%;
   height: 100%;
   background-color: #fff;
-  padding: 16px 16px 0px 16px;
+  padding: 16px;
 
   @media (max-width: 760px) {
     position: absolute;
