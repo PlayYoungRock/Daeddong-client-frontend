@@ -10,7 +10,15 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 const localFont = createLocalFont({ src: '../styles/omyu pretty.ttf' });
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
 });
 
 export default function App({ Component, pageProps }: AppProps) {

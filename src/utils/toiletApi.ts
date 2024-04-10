@@ -37,9 +37,9 @@ export const getToiletList = async (params: {
   latitude: number;
   longitude: number;
 }) => {
-  const { data } = await httpInstance.get<{ data: { toiletList: ToiletType[] } }>(TOILET_LIST, {
+  const { data } = await httpInstance.get<{ toiletList: ToiletType[] }>(TOILET_LIST, {
     params: params,
   });
 
-  return data.data.toiletList;
+  return data.toiletList;
 };
