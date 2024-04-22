@@ -14,6 +14,15 @@ interface FormType {
   etc: string;
 }
 
+interface FormType {
+  seq: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  name: string;
+  address: string;
+  etc: string;
+}
+
 export default function Home() {
   const { isCreatedMap } = useContext(MapContext);
   const [form, setForm] = useState<FormType | null>(null);
