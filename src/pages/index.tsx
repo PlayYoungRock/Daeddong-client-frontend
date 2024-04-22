@@ -108,6 +108,7 @@ const Container = styled.div`
 
   @media (min-width: 760px) {
     display: flex;
+    width: 760px;
     gap: 20px;
   }
 `;
