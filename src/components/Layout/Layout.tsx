@@ -19,15 +19,17 @@ const Container = styled.div`
 `;
 
 const Wrapper = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
   height: 100%;
-  width: 100%;
-  max-width: 410px;
 
-  @media (min-width: 760px) {
-    width: 760px;
+  @media (max-width: 760px) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: block;
+    width: 100%;
+    max-width: 410px;
   }
 `;

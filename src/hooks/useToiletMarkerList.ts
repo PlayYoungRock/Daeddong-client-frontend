@@ -1,35 +1,6 @@
 import { MapContext } from '@/components';
+import { ToiletType } from '@/utils';
 import { useContext, useEffect } from 'react';
-
-interface ToiletType {
-  seq: number;
-  name: string;
-  latitude: number;
-  longitude: number;
-  address: string;
-  si: string;
-  gungu: string;
-  floor: string | null;
-  openTime: string;
-  closeTime: string;
-  regDt: string;
-  modDt: string | null;
-  manageAgency: string;
-  maNum: string;
-  toiletType: string;
-  countMan: string;
-  countWomen: string;
-  babyYn: string;
-  unusualYn: string;
-  cctvYn: string;
-  alarmYn: string;
-  pwdYn: string;
-  pwd: string;
-  etc: string;
-  regId: string;
-  modId: string | null;
-  openYn: string;
-}
 
 interface OptionsType {
   list: ToiletType[];
