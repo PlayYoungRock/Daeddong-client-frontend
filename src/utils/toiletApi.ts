@@ -1,6 +1,10 @@
 import { httpInstance } from './http';
 
 export const TOILET_LIST = 'toiletList';
+export const SI_DO_LIST = 'sidoList';
+export const SI_GUN_GU_LIST = 'sigunguList';
+
+type ResultCodeType = '0000' | '1001' | '8000' | '8001';
 
 export interface ToiletType {
   seq: number;
@@ -32,6 +36,11 @@ export interface ToiletType {
   openYn: string;
 }
 
+interface SidoType {
+  si: string;
+  gungu: string;
+}
+
 export const getToiletList = async (params: {
   distance: number;
   latitude: number;
@@ -42,4 +51,29 @@ export const getToiletList = async (params: {
   });
 
   return data.toiletList;
+};
+
+export const getSidoList = async () => {
+  const { data } = await httpInstance.get<{ resultCode: ResultCodeType; sidoList: SidoType[] }>(
+    `${SI_DO_LIST}`,
+  );
+
+  if (data.resultCode === '0000') {
+    return data.sidoList;
+  }
+
+  throw Error(data.resultCode);
+};
+
+export const getSiGunguList = async (sido: string) => {
+  const { data } = await httpInstance.get<{ resultCode: ResultCodeType; sigunguList: SidoType[] }>(
+    `${SI_GUN_GU_LIST}`,
+    { params: { sido } },
+  );
+
+  if (data.resultCode === '0000') {
+    return data.sigunguList;
+  }
+
+  throw Error(data.resultCode);
 };

@@ -1,9 +1,11 @@
 import styled from 'styled-components';
-import { Map, InfoSheet, MapContext, Text } from '@/components';
-import { useContext, useState } from 'react';
-import { useCenter, useCurrentMarker, useDistance, useToiletMarkerList } from '@/hooks';
+import { useContext, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getToiletList } from '@/utils';
+
+import { Map, InfoSheet, MapContext, Text } from '@/components';
+import { useCenter, useCurrentMarker, useDistance, useToiletMarkerList } from '@/hooks';
+import { SI_DO_LIST, SI_GUN_GU_LIST, getSiGunguList, getSidoList, getToiletList } from '@/utils';
+import { NoneOption } from '@/constants';
 
 interface FormType {
   seq: number | null;
@@ -26,8 +28,35 @@ interface FormType {
 export default function Home() {
   const { isCreatedMap } = useContext(MapContext);
   const [form, setForm] = useState<FormType | null>(null);
+  const [sido, setSido] = useState('');
+  const [sigungu, setSigungu] = useState('');
+
   const { center } = useCenter();
   const { distance } = useDistance();
+
+  const { data: _sidoOptions } = useQuery({
+    queryKey: [SI_DO_LIST],
+    queryFn: getSidoList,
+    initialData: [],
+  });
+
+  const sidoOptions = useMemo(
+    () => [NoneOption, ..._sidoOptions.map(({ si }) => ({ label: si, value: si }))],
+    [_sidoOptions],
+  );
+
+  const { data: _sigunguOptions } = useQuery({
+    queryKey: [SI_GUN_GU_LIST, sido],
+    queryFn: () => getSiGunguList(sido),
+    enabled: !!sido,
+    gcTime: Infinity,
+    initialData: [],
+  });
+
+  const sigunguOptions = useMemo(
+    () => [NoneOption, ..._sigunguOptions.map(({ gungu }) => ({ label: gungu, value: gungu }))],
+    [_sigunguOptions],
+  );
 
   const { data: toiletList } = useQuery({
     queryKey: [distance, center.lat, center.lng],
@@ -83,6 +112,28 @@ export default function Home() {
     <Container>
       <Map />
       <InfoSheet>
+        <SelectWrapper>
+          <CustomSelect
+            value={sido}
+            onChange={(e) => {
+              setSido(e.target.value);
+              setSigungu('');
+            }}
+          >
+            {sidoOptions.map(({ label, value }, i) => (
+              <option key={`${value}-${i}`} value={value}>
+                {label}
+              </option>
+            ))}
+          </CustomSelect>
+          <CustomSelect value={sigungu} onChange={(e) => setSigungu(e.target.value)}>
+            {sigunguOptions.map(({ label, value }, i) => (
+              <option key={`${value}-${i}`} value={value}>
+                {label}
+              </option>
+            ))}
+          </CustomSelect>
+        </SelectWrapper>
         {form ? (
           <SheetWrapper>
             <FormWrapper>
@@ -124,4 +175,23 @@ const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
+`;
+
+const SelectWrapper = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 16px 0;
+
+  @media (max-width: 760px) {
+    position: absolute;
+    padding: 0;
+    top: -30px;
+    left: 0;
+    width: 100%;
+  }
+`;
+
+const CustomSelect = styled.select`
+  width: 100%;
 `;
