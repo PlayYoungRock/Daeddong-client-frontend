@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { Map, InfoSheet, MapContext, Text } from '@/components';
@@ -26,7 +26,7 @@ interface FormType {
 }
 
 export default function Home() {
-  const { isCreatedMap } = useContext(MapContext);
+  const { isCreatedMap, map } = useContext(MapContext);
   const [form, setForm] = useState<FormType | null>(null);
   const [sido, setSido] = useState('');
   const [sigungu, setSigungu] = useState('');
@@ -107,6 +107,26 @@ export default function Home() {
       });
     },
   });
+
+  useEffect(() => {
+    if (!isCreatedMap) return;
+
+    if (sido && sigungu) {
+      naver.maps.Service.geocode({ query: `${sido} ${sigungu}` }, (status, res) => {
+        if (status === naver.maps.Service.Status.ERROR) {
+          return alert('네이버 검색 서버 오류');
+        }
+
+        if (res.v2.meta.totalCount === 0) {
+          return alert('네이버 검색 결과 없음');
+        }
+
+        map.current?.panTo(
+          new naver.maps.LatLng(Number(res.v2.addresses[0].y), Number(res.v2.addresses[0].x)),
+        );
+      });
+    }
+  }, [isCreatedMap, map, sido, sigungu]);
 
   return (
     <Container>
