@@ -1,19 +1,13 @@
-import React, { memo, useContext, useEffect, useRef } from 'react';
+import React, { memo, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { MapContext } from './MapProvider';
+import { useNaverMap } from '@/hooks/useNaverMap';
 
 export const Map = memo(() => {
-  const { status, createMap } = useContext(MapContext);
-  const ref = useRef<HTMLDivElement | null>(null);
+  const [mapDiv, setMapDiv] = useState<HTMLDivElement | null>(null);
+  const { isLoading } = useNaverMap(mapDiv);
 
-  useEffect(() => {
-    if (ref.current) {
-      createMap(ref.current);
-    }
-  }, [createMap]);
-
-  if (status === null) {
+  if (isLoading) {
     return (
       <Container>
         {/* TODO Icon component*/}
@@ -44,7 +38,7 @@ export const Map = memo(() => {
     );
   }
 
-  return <Container ref={ref} />;
+  return <Container ref={(ref) => setMapDiv(ref)} />;
 });
 
 Map.displayName = 'Map';
