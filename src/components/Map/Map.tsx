@@ -1,11 +1,29 @@
-import React, { memo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 import { useNaverMap } from '@/hooks/useNaverMap';
+import { isBrowser } from '@/constants';
 
 export const Map = memo(() => {
   const [mapDiv, setMapDiv] = useState<HTMLDivElement | null>(null);
-  const { isLoading } = useNaverMap(mapDiv);
+  const { isLoading, map } = useNaverMap(mapDiv);
+
+  const moveCenter = useCallback(async () => {
+    if (!navigator.permissions || !map) return;
+
+    const { state } = await navigator.permissions.query({ name: 'geolocation' });
+    if (state === 'denied') return;
+
+    navigator.geolocation.getCurrentPosition(({ coords }) => {
+      map.setCenter(new naver.maps.LatLng(coords.latitude, coords.longitude));
+    });
+  }, [map]);
+
+  useEffect(() => {
+    if (isBrowser && !isLoading) {
+      moveCenter();
+    }
+  }, [isLoading, moveCenter]);
 
   if (isLoading) {
     return (
