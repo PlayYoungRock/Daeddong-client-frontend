@@ -1,24 +1,23 @@
 import { NaverMapContext } from '@/states';
-import { useContext, useEffect, useMemo } from 'react';
+import { useContext, useEffect } from 'react';
 
 export const useNaverMap = (mapDiv?: HTMLDivElement | null) => {
-  const context = useContext(NaverMapContext);
+  const { isLoading, naverMap, createNaverMap, deleteNaverMap } = useContext(NaverMapContext);
 
   useEffect(() => {
-    if (!context) throw Error('NaverMapProvider 선언 해주세요');
-  }, [context]);
+    if (isLoading === null) throw Error('NaverMapProvider 선언 해주세요');
+  }, [isLoading]);
 
   useEffect(() => {
-    if (!context || !mapDiv) return;
-    context.naverMap.current = new naver.maps.Map(mapDiv, { zoom: 17 });
+    if (!mapDiv) return;
+    if (createNaverMap && deleteNaverMap) {
+      createNaverMap(new naver.maps.Map(mapDiv, { zoom: 17 }));
 
-    return () => {
-      context.naverMap.current = null;
-    };
-  }, [context, mapDiv]);
+      return () => {
+        deleteNaverMap;
+      };
+    }
+  }, [createNaverMap, deleteNaverMap, mapDiv]);
 
-  const isLoading = useMemo(() => context?.isLoading ?? true, [context]);
-  const map = useMemo(() => context?.naverMap.current ?? null, [context]);
-
-  return { isLoading, map };
+  return { isLoading, map: naverMap };
 };
