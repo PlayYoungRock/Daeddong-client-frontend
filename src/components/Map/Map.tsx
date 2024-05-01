@@ -1,29 +1,40 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback, useContext, useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
 import { useNaverMap } from '@/hooks/useNaverMap';
 import { isBrowser } from '@/constants';
+import { ClientMapContext } from '@/states';
 
 export const Map = memo(() => {
+  const [_, setIsLoadingClientMap] = useContext(ClientMapContext);
   const [mapDiv, setMapDiv] = useState<HTMLDivElement | null>(null);
   const { isLoading, map } = useNaverMap(mapDiv);
 
   const moveCenter = useCallback(async () => {
-    if (!navigator.permissions || !map) return;
+    if (!navigator.permissions || !map || !setIsLoadingClientMap) return;
 
     const { state } = await navigator.permissions.query({ name: 'geolocation' });
-    if (state === 'denied') return;
+    if (state === 'denied') {
+      return setIsLoadingClientMap(false);
+    }
 
     navigator.geolocation.getCurrentPosition(({ coords }) => {
       map.setCenter(new naver.maps.LatLng(coords.latitude, coords.longitude));
     });
-  }, [map]);
+    setIsLoadingClientMap(false);
+  }, [map, setIsLoadingClientMap]);
 
   useEffect(() => {
     if (isBrowser && !isLoading) {
       moveCenter();
     }
   }, [isLoading, moveCenter]);
+
+  useEffect(() => {
+    if (setIsLoadingClientMap === null) {
+      throw Error('ClientMapProvider 를 선언해주세요');
+    }
+  }, [setIsLoadingClientMap]);
 
   if (isLoading) {
     return (

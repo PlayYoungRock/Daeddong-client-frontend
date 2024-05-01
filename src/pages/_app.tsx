@@ -6,7 +6,7 @@ import Head from 'next/head';
 
 import { GlobalStyle } from '@/styles';
 import { Layout } from '@/components';
-import { NaverMapProvider } from '@/states';
+import { ClientMapProvider, NaverMapProvider } from '@/states';
 
 const localFont = createLocalFont({ src: '../styles/omyu pretty.ttf' });
 
@@ -36,7 +36,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <main className={localFont.className}>
           <Layout>
             <NaverMapProvider>
-              <Component {...pageProps} />
+              <ClientMapProvider>
+                <Component {...pageProps} />
+              </ClientMapProvider>
             </NaverMapProvider>
           </Layout>
         </main>
