@@ -1,5 +1,5 @@
-import { MapContext } from '@/components';
-import { useCallback, useContext, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useNaverMap } from './useNaverMap';
 
 type useCurrentMarkerType = {
   onVisible: (e: naver.maps.PointerEvent) => void;
@@ -7,7 +7,7 @@ type useCurrentMarkerType = {
 };
 
 export const useCurrentMarker = (option?: useCurrentMarkerType) => {
-  const { isCreatedMap, map } = useContext(MapContext);
+  const { map } = useNaverMap();
   const marker = useRef<naver.maps.Marker | null>(null);
 
   const handleVisibleMarker = useCallback(
@@ -32,38 +32,26 @@ export const useCurrentMarker = (option?: useCurrentMarkerType) => {
   );
 
   useEffect(() => {
-    if (!isCreatedMap || !map.current) return;
+    if (!map) return;
 
     marker.current = new naver.maps.Marker({
-      position: map.current.getCenter(),
+      position: map.getCenter(),
       visible: false,
-      map: map.current,
+      map: map,
     });
-  }, [map, isCreatedMap]);
+  }, [map]);
 
   useEffect(() => {
-    if (!isCreatedMap || !map.current) return;
+    if (!map) return;
 
-    const webListener = naver.maps.Event.addListener(
-      map.current,
-      'rightclick',
-      handleVisibleMarker,
-    );
-    const mobileListener = naver.maps.Event.addListener(
-      map.current,
-      'longtap',
-      handleVisibleMarker,
-    );
-    const markerRemoveListener = naver.maps.Event.addListener(
-      map.current,
-      'click',
-      handleInVisibleMarker,
-    );
+    const webListener = naver.maps.Event.addListener(map, 'rightclick', handleVisibleMarker);
+    const mobileListener = naver.maps.Event.addListener(map, 'longtap', handleVisibleMarker);
+    const markerRemoveListener = naver.maps.Event.addListener(map, 'click', handleInVisibleMarker);
 
     return () => {
       naver.maps.Event.removeListener(webListener);
       naver.maps.Event.removeListener(mobileListener);
       naver.maps.Event.removeListener(markerRemoveListener);
     };
-  }, [handleInVisibleMarker, handleVisibleMarker, map, isCreatedMap]);
+  }, [handleInVisibleMarker, handleVisibleMarker, map]);
 };
