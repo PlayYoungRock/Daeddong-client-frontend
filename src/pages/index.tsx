@@ -1,10 +1,10 @@
 import styled from 'styled-components';
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { Map, InfoSheet, MapContext, Text } from '@/components';
-import { useCenter, useCurrentMarker, useDistance, useToiletMarkerList } from '@/hooks';
-import { SI_DO_LIST, SI_GUN_GU_LIST, getSiGunguList, getSidoList, getToiletList } from '@/utils';
+import { Map, InfoSheet, Text } from '@/components';
+import { useToiletList, useNaverMap, useCurrentMarker } from '@/hooks';
+import { SI_DO_LIST, SI_GUN_GU_LIST, getSiGunguList, getSidoList } from '@/utils';
 import { NoneOption } from '@/constants';
 
 interface FormType {
@@ -26,13 +26,48 @@ interface FormType {
 }
 
 export default function Home() {
-  const { isCreatedMap, map } = useContext(MapContext);
+  const { map } = useNaverMap();
   const [form, setForm] = useState<FormType | null>(null);
+
+  useCurrentMarker({
+    onVisible: ({ coord }) => {
+      naver.maps.Service.reverseGeocode(
+        {
+          coords: coord,
+          orders: naver.maps.Service.OrderType.ROAD_ADDR,
+        },
+        (status, response) => {
+          if (status === naver.maps.Service.Status.ERROR) return;
+
+          setForm({
+            seq: null,
+            name: '',
+            latitude: coord.x,
+            longitude: coord.y,
+            address: response.v2.address.roadAddress.replaceAll('  ', ' '),
+            etc: '',
+          });
+        },
+      );
+    },
+    onInVisible: () => setForm(null),
+  });
+
+  useToiletList({
+    onClick: ({ seq, name, latitude, longitude, address, etc }) =>
+      setForm({
+        seq,
+        name,
+        latitude,
+        longitude,
+        address,
+        etc,
+      }),
+  });
+
+  // 시군구 목록
   const [sido, setSido] = useState('');
   const [sigungu, setSigungu] = useState('');
-
-  const { center } = useCenter();
-  const { distance } = useDistance();
 
   const { data: _sidoOptions } = useQuery({
     queryKey: [SI_DO_LIST],
@@ -58,58 +93,8 @@ export default function Home() {
     [_sigunguOptions],
   );
 
-  const { data: toiletList } = useQuery({
-    queryKey: [distance, center.lat, center.lng],
-    queryFn: () => getToiletList({ distance, latitude: center.lat, longitude: center.lng }),
-    enabled: !!distance && !!isCreatedMap,
-    initialData: [],
-  });
-
-  useCurrentMarker({
-    onVisible: (e) => {
-      if (!isCreatedMap) return;
-      const { coord } = e;
-
-      naver.maps.Service.reverseGeocode(
-        {
-          coords: coord,
-          orders: naver.maps.Service.OrderType.ROAD_ADDR,
-        },
-        (status, response) => {
-          if (status === naver.maps.Service.Status.ERROR) return;
-
-          setForm({
-            seq: null,
-            name: '',
-            latitude: coord.x,
-            longitude: coord.y,
-            address: response.v2.address.roadAddress.replaceAll('  ', ' '),
-            etc: '',
-          });
-        },
-      );
-    },
-    onInVisible: () => setForm(null),
-  });
-
-  useToiletMarkerList({
-    list: toiletList,
-    onClick: (e) => {
-      const { seq, name, latitude, longitude, address, etc } = e;
-
-      setForm({
-        seq,
-        name,
-        latitude,
-        longitude,
-        address,
-        etc,
-      });
-    },
-  });
-
   useEffect(() => {
-    if (!isCreatedMap) return;
+    if (!map) return;
 
     if (sido && sigungu) {
       naver.maps.Service.geocode({ query: `${sido} ${sigungu}` }, (status, res) => {
@@ -121,12 +106,12 @@ export default function Home() {
           return alert('네이버 검색 결과 없음');
         }
 
-        map.current?.panTo(
+        map.panTo(
           new naver.maps.LatLng(Number(res.v2.addresses[0].y), Number(res.v2.addresses[0].x)),
         );
       });
     }
-  }, [isCreatedMap, map, sido, sigungu]);
+  }, [map, sido, sigungu]);
 
   return (
     <Container>
