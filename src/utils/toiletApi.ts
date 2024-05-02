@@ -53,7 +53,7 @@ export const getToiletList = async (params: GetToiletListType) => {
     { params: params },
   );
 
-  return data.resultCode === '9999' ? [] : data.toiletList;
+  return data.resultCode === '9999' ? [] : data.toiletList.slice(0, 10);
 };
 
 export const getSidoList = async () => {
