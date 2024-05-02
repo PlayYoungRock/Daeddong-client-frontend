@@ -4,7 +4,13 @@ export const TOILET_LIST = 'toiletList';
 export const SI_DO_LIST = 'sidoList';
 export const SI_GUN_GU_LIST = 'sigunguList';
 
-type ResultCodeType = '0000' | '1001' | '8000' | '8001';
+type ResultCodeType = '0000' | '1001' | '8000' | '8001' | '9999';
+
+export interface GetToiletListType {
+  distance: number;
+  latitude: number;
+  longitude: number;
+}
 
 export interface ToiletType {
   seq: number;
@@ -41,16 +47,13 @@ interface SidoType {
   gungu: string;
 }
 
-export const getToiletList = async (params: {
-  distance: number;
-  latitude: number;
-  longitude: number;
-}) => {
-  const { data } = await httpInstance.get<{ toiletList: ToiletType[] }>(TOILET_LIST, {
-    params: params,
-  });
+export const getToiletList = async (params: GetToiletListType) => {
+  const { data } = await httpInstance.get<{ toiletList: ToiletType[]; resultCode: ResultCodeType }>(
+    TOILET_LIST,
+    { params: params },
+  );
 
-  return data.toiletList;
+  return data.resultCode === '9999' ? [] : data.toiletList;
 };
 
 export const getSidoList = async () => {
