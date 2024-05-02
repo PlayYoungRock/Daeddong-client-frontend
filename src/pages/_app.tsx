@@ -1,11 +1,12 @@
 import type { AppProps } from 'next/app';
 import createLocalFont from 'next/font/local';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Head from 'next/head';
 
 import { GlobalStyle } from '@/styles';
-import { Layout, MapProvider } from '@/components';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { Layout } from '@/components';
+import { ClientMapProvider, NaverMapProvider } from '@/states';
 
 const localFont = createLocalFont({ src: '../styles/omyu pretty.ttf' });
 
@@ -34,9 +35,11 @@ export default function App({ Component, pageProps }: AppProps) {
         <GlobalStyle />
         <main className={localFont.className}>
           <Layout>
-            <MapProvider>
-              <Component {...pageProps} />
-            </MapProvider>
+            <NaverMapProvider>
+              <ClientMapProvider>
+                <Component {...pageProps} />
+              </ClientMapProvider>
+            </NaverMapProvider>
           </Layout>
         </main>
         <ReactQueryDevtools />
