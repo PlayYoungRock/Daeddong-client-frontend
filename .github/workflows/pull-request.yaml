@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Generate Environment Variables File
+        run: |
+          echo "NEXT_PUBLIC_BASE_API_URL=$NEXT_PUBLIC_BASE_API_URL" >> .env
+          echo "NEXT_PUBLIC_NAVER_CLIENT_ID=$NEXT_PUBLIC_NAVER_CLIENT_ID" >> .env
+        env:
+          NEXT_PUBLIC_BASE_API_URL: ${{ secrets.BASE_API_URL }}
+          NEXT_PUBLIC_NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+
+      - name: Build
+        run: yarn build
