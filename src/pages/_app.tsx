@@ -37,7 +37,7 @@ export default function App({ Component, pageProps }: AppProps) {
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="http://daeddong-admin-front.store" />
-        <meta property="og:image" content="../../public/thumbnail.png" />
+        <meta property="og:image" content="/thumbnail.png" />
       </Head>
       <QueryClientProvider client={queryClient}>
         <GlobalStyle />
