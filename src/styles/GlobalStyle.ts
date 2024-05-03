@@ -90,6 +90,7 @@ const resetCss = css`
     vertical-align: baseline;
     box-sizing: border-box;
 
+    -webkit-touch-callout: none;
     -webkit-user-select: none;
     -ms-user-select: none;
     -moz-user-select: none;
