@@ -16,17 +16,25 @@ export const Map = memo(() => {
   const [mapDiv, setMapDiv] = useState<HTMLDivElement | null>(null);
 
   const moveCenter = useCallback(async () => {
-    if (!navigator.permissions || !naverMap || !setIsLoadingClientMap) return;
+    if (!setIsLoadingClientMap) return;
+    if (!navigator.permissions || !naverMap) {
+      setIsLoadingClientMap(false);
+      return;
+    }
 
     const { state } = await navigator.permissions.query({ name: 'geolocation' });
+
     if (state === 'denied') {
       return setIsLoadingClientMap(false);
     }
 
-    navigator.geolocation.getCurrentPosition(({ coords }) => {
-      naverMap.setCenter(new naver.maps.LatLng(coords.latitude, coords.longitude));
-    });
-    setIsLoadingClientMap(false);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        naverMap.setCenter(new naver.maps.LatLng(coords.latitude, coords.longitude));
+        setIsLoadingClientMap(false);
+      },
+      () => setIsLoadingClientMap(false),
+    );
   }, [naverMap, setIsLoadingClientMap]);
 
   // context check
