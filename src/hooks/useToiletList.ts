@@ -75,7 +75,7 @@ export const useToiletList = ({ onClick }: useToiletListType) => {
         icon: '/map_toilet.svg',
         map: map,
       });
-      const listener = naver.maps.Event.addListener(marker, 'rightclick', (e) => {
+      const listener = naver.maps.Event.addListener(marker, 'click', (e) => {
         onClick({ ...e, ...data });
       });
 
