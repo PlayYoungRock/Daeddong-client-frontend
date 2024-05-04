@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useDebounce } from './useDebounce';
 import { useNaverMap } from './useNaverMap';
 import { GetToiletListType, TOILET_LIST, ToiletType, getToiletList } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
+import { ClientMapContext } from '@/states';
 
 interface CacheDataType {
-  listener: naver.maps.MapEventListener[];
-  marker: naver.maps.Marker[];
+  data: ToiletType;
+  listener: naver.maps.MapEventListener;
+  marker: naver.maps.Marker;
 }
 
 interface useToiletListType {
@@ -14,18 +16,18 @@ interface useToiletListType {
 }
 
 export const useToiletList = ({ onClick }: useToiletListType) => {
-  const { map } = useNaverMap();
+  const map = useNaverMap();
+  const [isLoadingClientMap] = useContext(ClientMapContext);
   // 현재 위치 정보
   const [current, setCurrent] = useState<GetToiletListType | null>(null);
   const currentValue = useDebounce(current, 1000);
-  const cachedList = useRef<ToiletType[]>([]);
-  const cachedListenerList = useRef<naver.maps.MapEventListener[]>([]);
-  const cachedMarkerList = useRef<naver.maps.Marker[]>([]);
+
+  const cacheData = useRef<Map<number, CacheDataType>>(new Map());
 
   const { data: toiletList, isLoading } = useQuery({
     queryKey: [TOILET_LIST, currentValue],
     queryFn: () => (currentValue ? getToiletList(currentValue) : []),
-    enabled: !!currentValue && !!map,
+    enabled: !!currentValue && !!map && !isLoadingClientMap,
   });
 
   // current 초기화 및 변경
@@ -50,60 +52,34 @@ export const useToiletList = ({ onClick }: useToiletListType) => {
   useEffect(() => {
     if (isLoading || !toiletList || !map) return;
 
-    // 제거, 유지, 생성 데이터를 구한다.
-    const staleData = cachedList.current.reduce<CacheDataType>(
-      (list, current, index) => {
-        if (toiletList.every(({ seq }) => current.seq !== seq)) {
-          list.listener.push(cachedListenerList.current[index]);
-          list.marker.push(cachedMarkerList.current[index]);
-        }
+    // stale data remove
+    cacheData.current.forEach(({ data }) => {
+      if (toiletList.some(({ seq }) => seq === data.seq)) return;
 
-        return list;
-      },
-      { listener: [], marker: [] },
-    );
+      const staleData = cacheData.current.get(data.seq);
+      if (!staleData) return;
 
-    const freshData = toiletList.reduce<CacheDataType>(
-      (list, current) => {
-        if (cachedList.current.every(({ seq, ...toilet }) => current.seq !== seq)) {
-          const marker = new naver.maps.Marker({
-            position: { lat: current.latitude, lng: current.longitude },
-            icon: '/map_toilet.svg',
-            map: map,
-          });
-          const listener = naver.maps.Event.addListener(marker, 'rightclick', (e) => {
-            onClick({ ...e, ...current });
-          });
-
-          list.marker.push(marker);
-          list.listener.push(listener);
-        }
-
-        return list;
-      },
-      { listener: [], marker: [] },
-    );
-
-    const staticData = cachedList.current.reduce<CacheDataType>(
-      (list, current, index) => {
-        if (toiletList.some(({ seq }) => current.seq === seq)) {
-          list.listener.push(cachedListenerList.current[index]);
-          list.marker.push(cachedMarkerList.current[index]);
-        }
-
-        return list;
-      },
-      { listener: [], marker: [] },
-    );
-
-    // 제거, 유지, 생성 데이터를 통해 naver map과 cacheData를 업데이트해준다.
-    staleData.marker.forEach((marker, i) => {
+      const { listener, marker } = staleData;
+      naver.maps.Event.removeListener(listener);
       marker.setMap(null);
-      naver.maps.Event.removeListener(staleData.listener[i]);
+
+      cacheData.current.delete(data.seq);
     });
 
-    cachedList.current = toiletList;
-    cachedListenerList.current = [...freshData.listener, ...staticData.listener];
-    cachedMarkerList.current = [...freshData.marker, ...staticData.marker];
+    // fresh data add
+    toiletList.forEach((data) => {
+      if (cacheData.current.get(data.seq)) return;
+
+      const marker = new naver.maps.Marker({
+        position: { lat: data.latitude, lng: data.longitude },
+        icon: '/map_toilet.svg',
+        map: map,
+      });
+      const listener = naver.maps.Event.addListener(marker, 'rightclick', (e) => {
+        onClick({ ...e, ...data });
+      });
+
+      cacheData.current.set(data.seq, { data, listener, marker });
+    });
   }, [isLoading, toiletList, map, onClick]);
 };

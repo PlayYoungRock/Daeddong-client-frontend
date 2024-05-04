@@ -53,19 +53,18 @@ export const getToiletList = async (params: GetToiletListType) => {
     { params: params },
   );
 
-  return data.resultCode === '9999' ? [] : data.toiletList.slice(0, 10);
+  if (data.resultCode === '8000' || data.resultCode === '8001') throw Error('토큰없음');
+
+  return data.resultCode === '9999' ? [] : data.toiletList;
 };
 
 export const getSidoList = async () => {
   const { data } = await httpInstance.get<{ resultCode: ResultCodeType; sidoList: SidoType[] }>(
     `${SI_DO_LIST}`,
   );
+  if (data.resultCode === '8000' || data.resultCode === '8001') throw Error('토큰없음');
 
-  if (data.resultCode === '0000') {
-    return data.sidoList;
-  }
-
-  throw Error(data.resultCode);
+  return data.sidoList;
 };
 
 export const getSiGunguList = async (sido: string) => {
@@ -74,9 +73,7 @@ export const getSiGunguList = async (sido: string) => {
     { params: { sido } },
   );
 
-  if (data.resultCode === '0000') {
-    return data.sigunguList;
-  }
+  if (data.resultCode === '8000' || data.resultCode === '8001') throw Error('토큰없음');
 
-  throw Error(data.resultCode);
+  return data.sigunguList;
 };

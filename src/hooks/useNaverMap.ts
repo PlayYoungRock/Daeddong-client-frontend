@@ -1,23 +1,22 @@
-import { NaverMapContext } from '@/states';
-import { useContext, useEffect } from 'react';
+import { ClientMapContext, NaverMapContext } from '@/states';
+import { useContext, useEffect, useState } from 'react';
 
-export const useNaverMap = (mapDiv?: HTMLDivElement | null) => {
-  const { isLoading, naverMap, createNaverMap, deleteNaverMap } = useContext(NaverMapContext);
+export const useNaverMap = () => {
+  const { isLoading: isLoadingNaverMap, naverMap } = useContext(NaverMapContext);
+  const [isLoadingClientMap, setIsLoadingClientMap] = useContext(ClientMapContext);
+  const [map, setMap] = useState<naver.maps.Map | null>(null);
+
+  // context check
+  useEffect(() => {
+    if (isLoadingNaverMap === null) throw Error('NaverMapProvider를 선언해주세요.');
+    if (setIsLoadingClientMap === null) throw Error('ClientMapProvider를 선언해주세요.');
+  }, [isLoadingNaverMap, setIsLoadingClientMap]);
 
   useEffect(() => {
-    if (isLoading === null) throw Error('NaverMapProvider 선언 해주세요');
-  }, [isLoading]);
+    if (isLoadingNaverMap || isLoadingClientMap) return;
 
-  useEffect(() => {
-    if (!mapDiv) return;
-    if (createNaverMap && deleteNaverMap) {
-      createNaverMap(new naver.maps.Map(mapDiv, { zoom: 17 }));
+    setMap(naverMap);
+  }, [isLoadingClientMap, isLoadingNaverMap, naverMap]);
 
-      return () => {
-        deleteNaverMap;
-      };
-    }
-  }, [createNaverMap, deleteNaverMap, mapDiv]);
-
-  return { isLoading, map: naverMap };
+  return map;
 };
