@@ -195,7 +195,7 @@ const SelectWrapper = styled.div`
   @media (max-width: 760px) {
     position: absolute;
     padding: 0;
-    top: -30px;
+    top: -40px;
     left: 0;
     width: 100%;
   }
@@ -203,4 +203,10 @@ const SelectWrapper = styled.div`
 
 const CustomSelect = styled.select`
   width: 100%;
+  outline: none;
+  height: 36px;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #222222;
 `;
