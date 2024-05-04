@@ -1,17 +1,22 @@
 import React, { memo, useCallback, useContext, useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { useNaverMap } from '@/hooks/useNaverMap';
 import { isBrowser } from '@/constants';
-import { ClientMapContext } from '@/states';
+import { ClientMapContext, NaverMapContext } from '@/states';
 
 export const Map = memo(() => {
+  const {
+    isLoading: isLoadingNaverMap,
+    naverMap,
+    createNaverMap,
+    deleteNaverMap,
+  } = useContext(NaverMapContext);
   const [_, setIsLoadingClientMap] = useContext(ClientMapContext);
+
   const [mapDiv, setMapDiv] = useState<HTMLDivElement | null>(null);
-  const { isLoading, map } = useNaverMap(mapDiv);
 
   const moveCenter = useCallback(async () => {
-    if (!navigator.permissions || !map || !setIsLoadingClientMap) return;
+    if (!navigator.permissions || !naverMap || !setIsLoadingClientMap) return;
 
     const { state } = await navigator.permissions.query({ name: 'geolocation' });
     if (state === 'denied') {
@@ -19,24 +24,38 @@ export const Map = memo(() => {
     }
 
     navigator.geolocation.getCurrentPosition(({ coords }) => {
-      map.setCenter(new naver.maps.LatLng(coords.latitude, coords.longitude));
+      naverMap.setCenter(new naver.maps.LatLng(coords.latitude, coords.longitude));
     });
     setIsLoadingClientMap(false);
-  }, [map, setIsLoadingClientMap]);
+  }, [naverMap, setIsLoadingClientMap]);
 
+  // context check
   useEffect(() => {
-    if (isBrowser && !isLoading) {
-      moveCenter();
-    }
-  }, [isLoading, moveCenter]);
-
-  useEffect(() => {
+    if (isLoadingNaverMap === null) throw Error('NaverMapProvider를 선언해주세요.');
     if (setIsLoadingClientMap === null) {
-      throw Error('ClientMapProvider 를 선언해주세요');
+      throw Error('ClientMapProvider를 선언해주세요.');
     }
-  }, [setIsLoadingClientMap]);
+  }, [isLoadingNaverMap, setIsLoadingClientMap]);
 
-  if (isLoading) {
+  // map setting
+  useEffect(() => {
+    if (!mapDiv || !createNaverMap || !deleteNaverMap) return;
+    createNaverMap(new naver.maps.Map(mapDiv, { zoom: 17 }));
+
+    return () => deleteNaverMap();
+  }, [mapDiv, createNaverMap, deleteNaverMap]);
+
+  // current here check
+  useEffect(() => {
+    if (isLoadingNaverMap || !setIsLoadingClientMap) return;
+    if (isBrowser) {
+      moveCenter();
+      return;
+    }
+    setIsLoadingClientMap(false);
+  }, [isLoadingNaverMap, moveCenter, setIsLoadingClientMap]);
+
+  if (isLoadingNaverMap) {
     return (
       <Container>
         {/* TODO Icon component*/}
