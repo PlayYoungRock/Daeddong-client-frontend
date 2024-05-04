@@ -7,7 +7,7 @@ type useCurrentMarkerType = {
 };
 
 export const useCurrentMarker = (option?: useCurrentMarkerType) => {
-  const { map } = useNaverMap();
+  const map = useNaverMap();
   const marker = useRef<naver.maps.Marker | null>(null);
 
   const handleVisibleMarker = useCallback(

@@ -1,10 +1,10 @@
 import styled from 'styled-components';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 import { Map, InfoSheet, Text } from '@/components';
 import { useToiletList, useNaverMap, useCurrentMarker } from '@/hooks';
-import { SI_DO_LIST, SI_GUN_GU_LIST, getSiGunguList, getSidoList } from '@/utils';
+import { SI_DO_LIST, SI_GUN_GU_LIST, ToiletType, getSiGunguList, getSidoList } from '@/utils';
 import { NoneOption } from '@/constants';
 
 interface FormType {
@@ -26,7 +26,7 @@ interface FormType {
 }
 
 export default function Home() {
-  const { map } = useNaverMap();
+  const map = useNaverMap();
   const [form, setForm] = useState<FormType | null>(null);
 
   useCurrentMarker({
@@ -52,9 +52,8 @@ export default function Home() {
     },
     onInVisible: () => setForm(null),
   });
-
-  useToiletList({
-    onClick: ({ seq, name, latitude, longitude, address, etc }) =>
+  const handleOnClick = useCallback(
+    ({ seq, name, latitude, longitude, address, etc }: ToiletType) =>
       setForm({
         seq,
         name,
@@ -63,6 +62,11 @@ export default function Home() {
         address,
         etc,
       }),
+    [],
+  );
+
+  useToiletList({
+    onClick: handleOnClick,
   });
 
   // 시군구 목록
