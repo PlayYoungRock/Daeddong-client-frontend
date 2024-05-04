@@ -29,7 +29,7 @@ export default function Home() {
   const map = useNaverMap();
   const [form, setForm] = useState<FormType | null>(null);
 
-  useCurrentMarker({
+  const currentMarker = useCurrentMarker({
     onVisible: ({ coord }) => {
       naver.maps.Service.reverseGeocode(
         {
@@ -53,7 +53,10 @@ export default function Home() {
     onInVisible: () => setForm(null),
   });
   const handleOnClick = useCallback(
-    ({ seq, name, latitude, longitude, address, etc }: ToiletType) =>
+    ({ seq, name, latitude, longitude, address, etc }: ToiletType) => {
+      if (currentMarker) {
+        currentMarker.setVisible(false);
+      }
       setForm({
         seq,
         name,
@@ -61,8 +64,9 @@ export default function Home() {
         longitude,
         address,
         etc,
-      }),
-    [],
+      });
+    },
+    [currentMarker],
   );
 
   useToiletList({

@@ -54,4 +54,6 @@ export const useCurrentMarker = (option?: useCurrentMarkerType) => {
       naver.maps.Event.removeListener(markerRemoveListener);
     };
   }, [handleInVisibleMarker, handleVisibleMarker, map]);
+
+  return marker.current;
 };
