@@ -16,8 +16,9 @@ export const Map = memo(() => {
   const [mapDiv, setMapDiv] = useState<HTMLDivElement | null>(null);
 
   const moveCenter = useCallback(async () => {
-    if (!setIsLoadingClientMap) return;
-    if (!navigator.permissions || !naverMap) {
+    if (!setIsLoadingClientMap || !naverMap) return;
+
+    if (!navigator.permissions) {
       setIsLoadingClientMap(false);
       return;
     }
