@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useDebounce } from './useDebounce';
 import { useNaverMap } from './useNaverMap';
 import { GetToiletListType, TOILET_LIST, ToiletType, getToiletList } from '@/utils';
@@ -20,7 +20,7 @@ export const useToiletList = ({ onClick }: useToiletListType) => {
   const [isLoadingClientMap] = useContext(ClientMapContext);
   // 현재 위치 정보
   const [current, setCurrent] = useState<GetToiletListType | null>(null);
-  const currentValue = useDebounce(current, 1000);
+  const currentValue = useDebounce(current, 300);
 
   const cacheData = useRef<Map<number, CacheDataType>>(new Map());
 
@@ -30,23 +30,37 @@ export const useToiletList = ({ onClick }: useToiletListType) => {
     enabled: !!currentValue && !!map && !isLoadingClientMap,
   });
 
-  // current 초기화 및 변경
-  useEffect(() => {
-    if (!map) return;
+  const handleOnSetCurrent = useCallback(
+    (bounds: naver.maps.LatLngBounds) => {
+      if (!map) return;
 
-    const listener = naver.maps.Event.addListener(map, 'bounds_changed', (bounds) => {
       const distance = new naver.maps.Polyline({
         path: [bounds.getNE(), map.getCenter()],
         map: map,
         visible: false,
       }).getDistance();
       setCurrent({ distance, latitude: map.getCenter().y, longitude: map.getCenter().x });
-    });
+    },
+    [map],
+  );
+
+  // current 초기화 및 변경
+  useEffect(() => {
+    if (!map) return;
+
+    if (current === null) {
+      handleOnSetCurrent(map.getBounds() as naver.maps.LatLngBounds);
+      return;
+    }
+
+    const listener = naver.maps.Event.addListener(map, 'bounds_changed', (bounds) =>
+      handleOnSetCurrent(bounds),
+    );
 
     return () => {
       naver.maps.Event.removeListener(listener);
     };
-  }, [map]);
+  }, [map, current, handleOnSetCurrent]);
 
   // naver map의 marker와 백엔드 api 데이터를 동기화
   useEffect(() => {
