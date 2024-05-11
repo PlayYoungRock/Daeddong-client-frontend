@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useNaverMap } from './useNaverMap';
+import { isMobile } from '@/constants';
 
 type useCurrentMarkerType = {
   onVisible: (e: naver.maps.PointerEvent) => void;
@@ -42,18 +43,27 @@ export const useCurrentMarker = (option?: useCurrentMarkerType) => {
   }, [map]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || isMobile) return;
 
     const webListener = naver.maps.Event.addListener(map, 'rightclick', handleVisibleMarker);
-    const mobileListener = naver.maps.Event.addListener(map, 'longtap', handleVisibleMarker);
     const markerRemoveListener = naver.maps.Event.addListener(map, 'click', handleInVisibleMarker);
 
     return () => {
       naver.maps.Event.removeListener(webListener);
-      naver.maps.Event.removeListener(mobileListener);
       naver.maps.Event.removeListener(markerRemoveListener);
     };
   }, [handleInVisibleMarker, handleVisibleMarker, map]);
 
+  useEffect(() => {
+    if (!map || !isMobile) return;
+
+    const mobileListener = naver.maps.Event.addListener(map, 'longtap', handleVisibleMarker);
+    const markerRemoveListener = naver.maps.Event.addListener(map, 'tap', handleInVisibleMarker);
+
+    return () => {
+      naver.maps.Event.removeListener(mobileListener);
+      naver.maps.Event.removeListener(markerRemoveListener);
+    };
+  }, [handleInVisibleMarker, handleVisibleMarker, map]);
   return marker.current;
 };
