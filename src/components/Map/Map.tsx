@@ -64,6 +64,18 @@ export const Map = memo(() => {
     setIsLoadingClientMap(false);
   }, [isLoadingNaverMap, moveCenter, setIsLoadingClientMap]);
 
+  // webview 링크복사 제거
+  useEffect(() => {
+    if (!mapDiv) return;
+    const handler = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    mapDiv.addEventListener('touchstart', handler, { passive: false });
+    return () => {
+      mapDiv.removeEventListener('touchstart', handler);
+    };
+  }, [mapDiv]);
+
   if (isLoadingNaverMap) {
     return (
       <Container>
