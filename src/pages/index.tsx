@@ -11,15 +11,10 @@ interface FormType {
   seq: number | null;
   latitude: number | null;
   longitude: number | null;
-  name: string;
-  address: string;
-  etc: string;
-}
-
-interface FormType {
-  seq: number | null;
-  latitude: number | null;
-  longitude: number | null;
+  countMan: number;
+  countWomen: number;
+  openTime: string;
+  closeTime: string;
   name: string;
   address: string;
   etc: string;
@@ -42,6 +37,10 @@ export default function Home() {
           setForm({
             seq: null,
             name: '',
+            countMan: 0,
+            countWomen: 0,
+            openTime: '',
+            closeTime: '',
             latitude: coord.x,
             longitude: coord.y,
             address: response.v2.address.roadAddress.replaceAll('  ', ' '),
@@ -53,15 +52,31 @@ export default function Home() {
     onInVisible: () => setForm(null),
   });
   const handleOnClick = useCallback(
-    ({ seq, name, latitude, longitude, address, etc }: ToiletType) => {
+    ({
+      seq,
+      name,
+      latitude,
+      longitude,
+      address,
+      etc,
+      countMan,
+      countWomen,
+      openTime,
+      closeTime,
+    }: ToiletType) => {
       if (currentMarker) {
         currentMarker.setVisible(false);
       }
+
       setForm({
         seq,
         name,
+        countMan,
+        countWomen,
         latitude,
         longitude,
+        openTime,
+        closeTime,
         address,
         etc,
       });
@@ -155,6 +170,10 @@ export default function Home() {
               </Text>
               <Text $size="large">{form.address}</Text>
               <Text $size="large">{form.etc}</Text>
+              <Text $size="large">여는시간: {form.openTime}</Text>
+              <Text $size="large">닫는시간: {form.closeTime}</Text>
+              <Text $size="large">남자화장실 개수: {form.countMan}</Text>
+              <Text $size="large">여자화장실 개수: {form.countWomen}</Text>
             </FormWrapper>
             {/* TODO CRUD api 작업이 완료되면 버튼 추가할것 */}
           </SheetWrapper>
