@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useContext, useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 
-import { isBrowser } from '@/constants';
+import { isBrowser, markerUrl } from '@/constants';
 import { ClientMapContext, NaverMapContext } from '@/states';
 
 export const Map = memo(() => {
@@ -68,9 +68,13 @@ export const Map = memo(() => {
   useEffect(() => {
     if (!mapDiv) return;
     const handler = (e: TouchEvent) => {
+      const target = e.targetTouches[0].target as HTMLImageElement;
+
+      if (target.src.includes(markerUrl)) return;
       e.preventDefault();
     };
-    mapDiv.addEventListener('touchstart', handler, { passive: false });
+
+    mapDiv.addEventListener('touchstart', handler);
     return () => {
       mapDiv.removeEventListener('touchstart', handler);
     };
