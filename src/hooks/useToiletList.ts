@@ -4,7 +4,7 @@ import { useNaverMap } from './useNaverMap';
 import { GetToiletListType, TOILET_LIST, ToiletType, getToiletList } from '@/utils';
 import { useQuery } from '@tanstack/react-query';
 import { ClientMapContext } from '@/states';
-import { isMobile, markerUrl } from '@/constants';
+import { markerUrl } from '@/constants';
 
 interface CacheDataType {
   data: ToiletType;
@@ -91,7 +91,7 @@ export const useToiletList = ({ onClick }: useToiletListType) => {
         map: map,
       });
 
-      const listener = naver.maps.Event.addListener(marker, isMobile ? 'tap' : 'click', (e) => {
+      const listener = naver.maps.Event.addListener(marker, 'click', (e) => {
         onClick({ ...e, ...data });
       });
 
