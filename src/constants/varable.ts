@@ -6,3 +6,4 @@ export const isMobile =
   window?.navigator.userAgent.match(
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i,
   );
+export const markerUrl = '/toilet.svg';
